@@ -1,40 +1,29 @@
 import os
 from datetime import datetime
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
-from telegram.ext import (
-    ApplicationBuilder, CommandHandler, ContextTypes
-)
+from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes, CallbackQueryHandler
 
-# Получаем переменные окружения
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 channel = os.getenv("CHANNEL_ID")
-
-if not BOT_TOKEN:
-    raise Exception("BOT_TOKEN not set")
-if not channel:
+if channel is None:
     raise Exception("CHANNEL_ID not set")
 
 CHANNEL_ID = int(channel)
 TRIAL_DURATION = 3600  # 1 час
 
-# Словарь для отслеживания, кто когда получил доступ
 user_entry_times = {}
 
-# /start команда
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
-
     if user_id in user_entry_times:
         await update.message.reply_text("Ты уже получил доступ 👌")
         return
 
     user_entry_times[user_id] = datetime.now()
-
     button = InlineKeyboardButton("Перейти в канал", url="https://t.me/+m7n_F5gM1Zk1ZDNi")
     reply_markup = InlineKeyboardMarkup([[button]])
     await update.message.reply_text("Ты получил доступ на 1 час 👇", reply_markup=reply_markup)
 
-# Проверка, у кого доступ истёк
 async def check_access(context: ContextTypes.DEFAULT_TYPE):
     now = datetime.now()
     for user_id, entry_time in list(user_entry_times.items()):
@@ -43,16 +32,12 @@ async def check_access(context: ContextTypes.DEFAULT_TYPE):
                 await context.bot.ban_chat_member(CHANNEL_ID, user_id)
                 await context.bot.unban_chat_member(CHANNEL_ID, user_id)
                 del user_entry_times[user_id]
-                print(f"Удалён доступ у {user_id}")
             except Exception as e:
                 print(f"Ошибка при удалении доступа {user_id}: {e}")
 
-# Запуск бота
 if __name__ == "__main__":
     app = ApplicationBuilder().token(BOT_TOKEN).build()
-
     app.add_handler(CommandHandler("start", start))
     app.job_queue.run_repeating(check_access, interval=60, first=10)
-
-    print("✅ Бот запущен")
+    print("Бот запущен")
     app.run_polling()
