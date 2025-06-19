@@ -36,7 +36,7 @@ async def check_access(context: ContextTypes.DEFAULT_TYPE):
                 print(f"Ошибка при удалении доступа {user_id}: {e}")
 
 if __name__ == "__main__":
-    app = ApplicationBuilder().token(BOT_TOKEN).build()
+    app = ApplicationBuilder().token(8034282749:AAFvoF_C4AdKXInTXxy7jkYRVNJg3GQKN6A).build()
     app.add_handler(CommandHandler("start", start))
     app.job_queue.run_repeating(check_access, interval=60, first=10)
     print("Бот запущен")
