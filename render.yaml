@@ -2,7 +2,6 @@ services:
   - type: web
     name: discipline-access-bot
     runtime: python
-    pythonVersion: 3.10.12   # 👉 ВОТ ЭТА СТРОКА — КРИТИЧЕСКИ ВАЖНА
     buildCommand: "pip install -r requirements.txt"
     startCommand: "python main.py"
     envVars:
